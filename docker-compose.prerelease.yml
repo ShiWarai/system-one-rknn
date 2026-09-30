@@ -1,0 +1,8 @@
+# Кандидат: образ :prerelease из GHCR. Сборка локально не выполняется.
+# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:prerelease
+# docker compose -f docker-compose.yml -f docker-compose.prerelease.yml up -d
+
+services:
+  service-template:
+    image: ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:prerelease
+    build: !reset null

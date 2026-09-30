@@ -1,0 +1,8 @@
+# Продакшен: образ :main из GHCR. Сборка локально не выполняется.
+# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:main
+# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  service-template:
+    image: ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:main
+    build: !reset null
