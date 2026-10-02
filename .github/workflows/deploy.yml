@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       publish_prerelease:
-        description: "Build and publish prerelease image to GHCR (tag :prerelease)"
+        description: "Build and publish prerelease image to GHCR (tag :rk3588-prerelease)"
         required: false
         default: false
         type: boolean
@@ -52,12 +52,12 @@ jobs:
           file: ./Dockerfile
           target: dev
           platforms: ${{ matrix.platform }}
-          tags: service-template-dev:latest
+          tags: system-one-rknn-dev:latest
           load: true
           push: false
           provenance: false
-          cache-from: type=gha,scope=service-template-dev-${{ env.PLATFORM_PAIR }}
-          cache-to: type=gha,mode=max,scope=service-template-dev-${{ env.PLATFORM_PAIR }}
+          cache-from: type=gha,scope=system-one-rknn-dev-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=system-one-rknn-dev-${{ env.PLATFORM_PAIR }}
 
       - name: Run tests in container
         run: docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
@@ -77,8 +77,10 @@ jobs:
         include:
           - runner: ubuntu-latest
             platform: linux/amd64
+            board: rk3588
           - runner: ubuntu-24.04-arm
             platform: linux/arm64
+            board: rk3588
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -87,7 +89,7 @@ jobs:
         run: |
           platform="${{ matrix.platform }}"
           echo "PLATFORM_PAIR=${platform//\//-}" >> "$GITHUB_ENV"
-          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/service-template" >> "$GITHUB_ENV"
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/system-one-rknn" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -107,12 +109,14 @@ jobs:
           file: ./Dockerfile
           target: runtime
           platforms: ${{ matrix.platform }}
+          build-args: |
+            BOARD=${{ matrix.board }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           provenance: false
-          cache-from: type=gha,scope=service-template-prerelease-${{ env.PLATFORM_PAIR }}
-          cache-to: type=gha,mode=max,scope=service-template-prerelease-${{ env.PLATFORM_PAIR }}
+          cache-from: type=gha,scope=system-one-rknn-${{ matrix.board }}-prerelease-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=system-one-rknn-${{ matrix.board }}-prerelease-${{ env.PLATFORM_PAIR }}
 
       - name: Export digest
         run: |
@@ -123,7 +127,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-prerelease-${{ env.PLATFORM_PAIR }}
+          name: digests-${{ matrix.board }}-prerelease-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -133,15 +137,19 @@ jobs:
     needs: publish-prerelease
     if: needs.publish-prerelease.result == 'success'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [rk3588]
     steps:
       - name: Prepare
-        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/service-template" >> "$GITHUB_ENV"
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/system-one-rknn" >> "$GITHUB_ENV"
 
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-prerelease-*
+          pattern: digests-${{ matrix.board }}-prerelease-*
           merge-multiple: true
 
       - name: Set up Docker Buildx
@@ -164,8 +172,8 @@ jobs:
           done
           # shellcheck disable=SC2086
           docker buildx imagetools create \
-            -t "${IMAGE_NAME}:prerelease" \
-            -t "${IMAGE_NAME}:${{ github.sha }}" \
+            -t "${IMAGE_NAME}:${{ matrix.board }}-prerelease" \
+            -t "${IMAGE_NAME}:${{ matrix.board }}-${{ github.sha }}" \
             $args
 
   notify-telegram:
@@ -215,8 +223,8 @@ jobs:
             *Тесты и prerelease успешны*
             Репозиторий: `${{ github.repository }}`
             Ветка: `${{ github.ref_name }}`
-            Тег: `:prerelease` и `:${{ github.sha }}`
-            Образ: `ghcr.io/${{ github.repository_owner }}/service-template:prerelease`
+            Тег: `:rk3588-prerelease` и `:rk3588-${{ github.sha }}`
+            Образ: `ghcr.io/${{ github.repository_owner }}/system-one-rknn:rk3588-prerelease`
             [Открыть run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Tests OK (no prerelease)

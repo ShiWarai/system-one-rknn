@@ -1,15 +1,15 @@
 # Только dev-контейнер для тестов. Прод-сервис сюда не входит.
 
-name: service-template-dev
+name: system-one-rknn-dev
 
 services:
   dev:
-    image: service-template-dev
+    image: system-one-rknn-dev
     build:
       context: .
       dockerfile: Dockerfile
       target: dev
-    container_name: service-template-dev
+    container_name: system-one-rknn-dev
     user: "${RUNNER_UID:-0}:${RUNNER_GID:-0}"
     volumes:
       - .:/app

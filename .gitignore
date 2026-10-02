@@ -3,3 +3,5 @@
 .cache/
 models/
 build/
+__pycache__/
+*.pyc

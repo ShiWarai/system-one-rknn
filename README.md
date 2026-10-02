@@ -1,4 +1,4 @@
-# service-template
+# system-one-rknn
 
 Шаблон сервиса: CI, Docker и документация. Код приложения сюда не входит — после копирования шаблона его ставят на место заглушек.
 
@@ -60,17 +60,17 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 Локальная сборка — `docker-compose.yml`, target `runtime`.
 
-Кандидат на проверку (`:prerelease`):
+Кандидат на проверку (`:rk3588-prerelease`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:prerelease"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-prerelease"
 docker compose -f docker-compose.yml -f docker-compose.prerelease.yml up -d
 ```
 
-Продакшен (`:main`):
+Продакшен (`:rk3588-main`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:main"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-main"
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
@@ -93,9 +93,9 @@ docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 
 | Тег | Когда |
 | --- | --- |
-| `:main` | Успешный Deploy на `main` |
-| `:prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
-| `:<sha>` | Тот же билд, что `:main` или `:prerelease` |
+| `:rk3588-main` | Успешный Deploy на `main` |
+| `:rk3588-prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
+| `:rk3588-<sha>` | Тот же билд, что `:rk3588-main` или `:rk3588-prerelease` |
 
 Образы `linux/amd64` и `linux/arm64` собираются на нативных раннерах GitHub и публикуются одним манифестом.
 

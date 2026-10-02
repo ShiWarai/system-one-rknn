@@ -1,5 +1,5 @@
 #!/bin/sh
-# Заглушка CI. Замените на реальные тесты (pytest, ctest, cargo test, …).
 set -eu
-echo "stub tests: ok"
-exit 0
+cd "$(dirname "$0")/.."
+ruff check app tests
+python -m unittest discover -s tests -v

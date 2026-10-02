@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>system one</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      margin: 0; padding: 16px; background: #111; color: #d4d4d4;
+    }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    h2 { font-size: 14px; margin: 16px 0 6px; }
+    label { display: block; margin: 10px 0 4px; color: #9a9a9a; }
+    select, textarea, button {
+      font: inherit; color: inherit; background: #1c1c1c;
+      border: 1px solid #333; border-radius: 4px;
+    }
+    select, textarea { width: 100%; box-sizing: border-box; padding: 8px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    #time { margin-left: 10px; color: #9a9a9a; }
+    .err { color: #e07070; min-height: 1.2em; }
+    table { width: 100%; border-collapse: collapse; background: #1c1c1c; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #333; }
+    th { color: #9a9a9a; }
+    pre {
+      margin: 0; padding: 10px; background: #1c1c1c; border: 1px solid #333;
+      border-radius: 4px; overflow: auto; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>system one</h1>
+  <label for="model">model</label>
+  <select id="model"></select>
+  <label for="state">state</label>
+  <textarea id="state" rows="3">Database replication lag exceeded 45 seconds.</textarea>
+  <label for="questions">questions</label>
+  <textarea id="questions" rows="16">{
+  "intent": {
+    "type": "choice",
+    "instructions": "Classify the root cause domain.",
+    "criteria": {
+      "infrastructure": "Database, hardware, network, or server failures",
+      "billing": "Invoices, payments, refunds"
+    }
+  },
+  "is_urgent": {
+    "type": "noul",
+    "instructions": "Does this issue require immediate attention?"
+  },
+  "severity": {
+    "type": "score",
+    "instructions": "Rate the incident severity.",
+    "criteria": ["Low", "Medium", "High"]
+  }
+}</textarea>
+  <p>
+    <button id="run" type="button">Run</button>
+    <span id="time"></span>
+  </p>
+  <div id="error" class="err"></div>
+  <h2>answers</h2>
+  <div id="out"></div>
+  <h2>raw response</h2>
+  <pre id="raw"></pre>
+  <script>
+    const modelEl = document.getElementById("model");
+    const errEl = document.getElementById("error");
+    const outEl = document.getElementById("out");
+    const rawEl = document.getElementById("raw");
+    const timeEl = document.getElementById("time");
+
+    function cell(text) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      return td;
+    }
+
+    function num(value, digits) {
+      const x = Number(value);
+      return Number.isFinite(x) ? x.toFixed(digits) : "";
+    }
+
+    function render(data) {
+      outEl.replaceChildren();
+      const table = document.createElement("table");
+      const head = document.createElement("tr");
+      for (const title of ["question", "answer", "confidence"]) {
+        const th = document.createElement("th");
+        th.textContent = title;
+        head.appendChild(th);
+      }
+      table.appendChild(head);
+      for (const [name, answer] of Object.entries(data.answers || {})) {
+        let value = "";
+        if (answer.type === "choice") value = String(answer.choice ?? "");
+        else if (answer.type === "noul") value = num(answer.noul, 3);
+        else if (answer.type === "score") value = num(answer.score, 3);
+        else value = JSON.stringify(answer);
+        const tr = document.createElement("tr");
+        tr.appendChild(cell(name));
+        tr.appendChild(cell(value));
+        tr.appendChild(cell(answer.confidence == null ? "" : num(answer.confidence, 2)));
+        table.appendChild(tr);
+      }
+      outEl.appendChild(table);
+      rawEl.textContent = JSON.stringify(data, null, 2);
+    }
+
+    fetch("/v1/models").then((res) => res.json()).then((data) => {
+      for (const model of data.models || []) {
+        const option = document.createElement("option");
+        option.value = model.name;
+        option.textContent = model.name;
+        modelEl.appendChild(option);
+      }
+    }).catch((err) => { errEl.textContent = String(err); });
+
+    document.getElementById("run").onclick = async () => {
+      errEl.textContent = "";
+      outEl.replaceChildren();
+      rawEl.textContent = "";
+      timeEl.textContent = "";
+      let questions;
+      try { questions = JSON.parse(document.getElementById("questions").value); }
+      catch (err) { errEl.textContent = "questions: " + err.message; return; }
+      const rawState = document.getElementById("state").value.trim();
+      let state;
+      try { state = JSON.parse(rawState); }
+      catch (err) { state = rawState; }
+      const started = performance.now();
+      try {
+        const res = await fetch("/v1/systemone", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({model: modelEl.value, state, questions})
+        });
+        timeEl.textContent = Math.round(performance.now() - started) + " ms, HTTP " + res.status;
+        const text = await res.text();
+        if (!res.ok) { errEl.textContent = text; rawEl.textContent = text; return; }
+        render(JSON.parse(text));
+      } catch (err) {
+        errEl.textContent = String(err);
+      }
+    };
+  </script>
+</body>
+</html>
