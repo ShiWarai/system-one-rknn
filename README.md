@@ -106,7 +106,3 @@ docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 ## Лицензия
 
 Проект распространяется по лицензии [MIT](https://opensource.org/licenses/MIT).
-
-## Авторские права
-
-Copyright (c) 2026 Shi Warai. Подробности — в [LICENSE](LICENSE).
