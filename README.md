@@ -1,6 +1,6 @@
-# service-template
+# system-one-rknn
 
-Шаблон сервиса: CI, Docker и документация. Код приложения сюда не входит — после копирования шаблона его ставят на место заглушек.
+Сервис инференса для NPU Rockchip RK3588: Laya multilingual (RKNN 2.3.2) и Kev-0.8B (RKLLM 1.3.1) по HTTP API. CI, Docker и документация.
 
 Чтобы GitHub показывал кнопку **Use this template**, в репозитории-источнике включите **Settings → General → Template repository**.
 
@@ -12,8 +12,8 @@
 
 | Категория | Технологии |
 | --- | --- |
-| Приложение | заменить: язык, фреймворк, порт |
-| Тесты | заменить: команда в `scripts/ci-test.sh` |
+| Приложение | Python 3 (stdlib `http.server` + numpy + tokenizers), порт 8080 |
+| Тесты | `ruff check` + `python -m unittest`, команда в `scripts/ci-test.sh` |
 | Инфраструктура | Docker, Docker Compose, GitHub Actions, GHCR |
 
 ## Оглавление
@@ -35,6 +35,14 @@ docker compose build
 docker compose up -d --wait
 curl -fsS "http://127.0.0.1:${PORT:-8080}/health"
 ```
+
+API:
+
+- `GET /health` — статус и список загруженных моделей.
+- `GET /v1/models` — каталог моделей.
+- `POST /v1/systemone` — вопросы трёх типов (`choice`, `noul`, `score`); в ответе вероятности, уверенность и `latency_ms`.
+
+Переменные — в `.env.example`: `PORT`, `GHCR_OWNER`, `SYSTEM_ONE_ENGINE` (`npu` или `fake`), `MODELS` (`laya`, `kev`), `MODELS_DIR`, `LAYA_REPO`, `KEV_REPO`, `BOARD`.
 
 Образ из GHCR, без локальной сборки:
 
@@ -60,17 +68,17 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 Локальная сборка — `docker-compose.yml`, target `runtime`.
 
-Кандидат на проверку (`:prerelease`):
+Кандидат на проверку (`:rk3588-prerelease`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:prerelease"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-prerelease"
 docker compose -f docker-compose.yml -f docker-compose.prerelease.yml up -d
 ```
 
-Продакшен (`:main`):
+Продакшен (`:rk3588-main`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/service-template:main"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-main"
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
@@ -85,7 +93,7 @@ docker compose -f docker-compose.dev.yml build dev
 docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 ```
 
-Сейчас `scripts/ci-test.sh` — заглушка и всегда завершается с кодом 0.
+`scripts/ci-test.sh` запускает `ruff check app tests` и `python -m unittest discover -s tests`.
 
 ## CI/CD
 
@@ -93,9 +101,9 @@ docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 
 | Тег | Когда |
 | --- | --- |
-| `:main` | Успешный Deploy на `main` |
-| `:prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
-| `:<sha>` | Тот же билд, что `:main` или `:prerelease` |
+| `:rk3588-main` | Успешный Deploy на `main` |
+| `:rk3588-prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
+| `:rk3588-<sha>` | Тот же билд, что `:rk3588-main` или `:rk3588-prerelease` |
 
 Образы `linux/amd64` и `linux/arm64` собираются на нативных раннерах GitHub и публикуются одним манифестом.
 
@@ -106,7 +114,3 @@ docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 ## Лицензия
 
 Проект распространяется по лицензии [MIT](https://opensource.org/licenses/MIT).
-
-## Авторские права
-
-Copyright (c) 2026 Shi Warai. Подробности — в [LICENSE](LICENSE).
