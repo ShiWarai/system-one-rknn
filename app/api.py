@@ -168,10 +168,9 @@ def assemble(item, probs):
     }
 
 
-def response(model, answers, input_tokens, output_tokens, latency_ms):
+def response(model, answers, input_tokens, output_tokens):
     return {
         "model": model,
         "answers": answers,
         "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens},
-        "latency_ms": round(latency_ms, 1),
     }

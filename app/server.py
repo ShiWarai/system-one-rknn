@@ -2,7 +2,6 @@
 import json
 import os
 import threading
-import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -87,15 +86,13 @@ class Runtime:
         engine = self.engines[model_name]
         answers = {}
         tokens = 0
-        started = time.perf_counter()
         with self._lock:
             for item in items:
                 logits, used, _elapsed = engine.forward(state, item)
                 probs = softmax(logits, engine.temperature(item["kind"]))
                 answers[item["id"]] = assemble(item, probs)
                 tokens += used
-        elapsed_ms = (time.perf_counter() - started) * 1000
-        return response(model_name, answers, tokens, 0, elapsed_ms)
+        return response(model_name, answers, tokens, 0)
 
 
 def make_handler(runtime):

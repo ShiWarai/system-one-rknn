@@ -1,4 +1,5 @@
 import json
+import re
 import threading
 import unittest
 import urllib.error
@@ -87,6 +88,25 @@ class HttpTest(unittest.TestCase):
             html = response.read().decode()
         self.assertIn("/v1/systemone", html)
         self.assertEqual(response.status, 200)
+
+    def test_page_is_bilingual(self):
+        with urllib.request.urlopen(self.base + "/") as response:
+            html = response.read().decode()
+        match = re.search(r"const STRINGS = (\{.*?\n\s*\});", html, re.S)
+        self.assertIsNotNone(match, "STRINGS i18n block not found")
+        strings = json.loads(match.group(1))
+        self.assertEqual(set(strings), {"en", "ru"})
+        self.assertEqual(set(strings["en"]), set(strings["ru"]))
+        used = set(re.findall(r'data-i18n="([^"]+)"', html))
+        self.assertTrue(used, "no data-i18n bindings in page")
+        for code, pack in strings.items():
+            self.assertFalse(used - set(pack), "data-i18n keys missing in %s" % code)
+            json.loads(pack["defaultQuestions"])
+            self.assertTrue(pack["defaultState"])
+        self.assertEqual(strings["en"]["run"], "Run")
+        self.assertEqual(strings["ru"]["run"], "Запустить")
+        self.assertIn('<html lang="en">', html)
+        self.assertIn("navigator.languages", html)
 
 
 if __name__ == "__main__":
