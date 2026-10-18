@@ -11,7 +11,7 @@ RUN apt-get update \
 
 COPY requirements.txt requirements-dev.txt /tmp/
 RUN python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1 \
+    && /opt/venv/bin/pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch==2.14.1+cpu \
     && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements-dev.txt
 
 ENV PATH=/opt/venv/bin:${PATH}
@@ -70,7 +70,7 @@ RUN apt-get update \
 
 COPY requirements.txt requirements-cpu.txt /tmp/
 RUN python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1 \
+    && /opt/venv/bin/pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch==2.14.1+cpu \
     && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements-cpu.txt
 
 ENV PATH=/opt/venv/bin:${PATH} \
