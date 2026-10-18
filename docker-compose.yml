@@ -9,8 +9,8 @@ services:
       dockerfile: Dockerfile
       target: runtime
       args:
-        BOARD: ${BOARD:-rk3588}
-    image: system-one-rknn:${BOARD:-rk3588}
+        BOARD: ${BOARD:-rknn}
+    image: system-one-rknn:${BOARD:-rknn}
     container_name: system-one-rknn
     restart: unless-stopped
     environment:

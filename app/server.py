@@ -48,15 +48,27 @@ def load_engines():
         if "kev" in names:
             engines.append(FakeEngine("kev-0.8b", "Fake Kev engine for tests", "2026-09-30", temperature=2.351))
         return engines
+    if mode not in ("npu", "cpu"):
+        raise SystemExit("SYSTEM_ONE_ENGINE must be npu, cpu or fake")
     from app.download import ensure_models
-    from app.kev_engine import KevEngine
-    from app.laya_engine import LayaEngine
 
     root = os.environ.get("MODELS_DIR", "/models")
     laya_repo = os.environ.get("LAYA_REPO", "ShiWarai/laya-multilingual-rknn")
     kev_repo = os.environ.get("KEV_REPO", "ShiWarai/kev-0.8b-rknn")
-    ensure_models(root, laya_repo, kev_repo, names)
+    ensure_models(root, laya_repo, kev_repo, names, engine=mode)
     engines = []
+    if mode == "cpu":
+        from app.kev_cpu import KevCpuEngine
+        from app.laya_cpu import LayaCpuEngine
+
+        if "laya" in names:
+            engines.append(LayaCpuEngine.load(root))
+        if "kev" in names:
+            engines.append(KevCpuEngine.load(root))
+        return engines
+    from app.kev_engine import KevEngine
+    from app.laya_engine import LayaEngine
+
     if "laya" in names:
         engines.append(LayaEngine(os.path.join(root, "laya"), os.environ["RKNN_LIB"]))
     if "kev" in names:

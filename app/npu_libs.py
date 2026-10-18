@@ -4,7 +4,7 @@ import os
 import sys
 from urllib.request import Request, urlopen
 
-# Commits v2.3.2 and release-v1.3.1. A new board is a new entry and a CI matrix row.
+# Commits v2.3.2 and release-v1.3.1, the RK3588 aarch64 runtime. New board — new entry and a CI matrix row.
 _RKNN_RT_URL = (
     "https://github.com/airockchip/rknn-toolkit2/raw/"
     "42aa1d426c0a9e0869b6374edba009f7208a1926/"
@@ -15,7 +15,7 @@ _RKLLM_RT_URL = (
     "f7390530443bf84f0394255a449d7cbe81e69d1c/"
     "rkllm-runtime/Linux/librkllm_api/aarch64/librkllmrt.so"
 )
-RK3588_LIBRARIES = (
+RKNN_LIBRARIES = (
     (
         "librknnrt-2.3.2.so",
         _RKNN_RT_URL,
@@ -29,7 +29,7 @@ RK3588_LIBRARIES = (
 )
 
 _BOARDS = {
-    "rk3588": RK3588_LIBRARIES,
+    "rknn": RKNN_LIBRARIES,
 }
 
 

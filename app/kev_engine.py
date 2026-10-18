@@ -1,7 +1,6 @@
 """Kev-0.8B w8a8 on RKLLM runtime 1.3.1. The pointer head stays on CPU."""
 import ctypes
 import json
-import math
 import os
 import time
 
@@ -9,6 +8,7 @@ import numpy as np
 from tokenizers import Tokenizer
 
 from app.kev_encode import encode_question
+from app.kev_pointer import PointerHead
 
 RKLLM_INPUT_TOKEN = 1
 RKLLM_INFER_GET_LAST_HIDDEN_LAYER = 1
@@ -140,11 +140,7 @@ class KevEngine:
     def __init__(self, root, lib_path):
         with open(os.path.join(root, "pointer.json"), encoding="utf-8") as handle:
             self._temperature_value = float(json.load(handle)["temperature"])
-        self._wq = np.load(os.path.join(root, "q_weight.npy"))
-        self._bq = np.load(os.path.join(root, "q_bias.npy"))
-        self._wk = np.load(os.path.join(root, "k_weight.npy"))
-        self._bk = np.load(os.path.join(root, "k_bias.npy"))
-        self._scale = 1.0 / math.sqrt(self._wq.shape[0])
+        self._head = PointerHead(root)
         self._tok = Tokenizer.from_file(os.path.join(root, "tokenizer.json"))
         self._captured = {}
         self._lib = ctypes.CDLL(lib_path)
@@ -205,7 +201,7 @@ class KevEngine:
     def forward(self, state, item):
         ids, decide, opt_idx = encode_question(self._tok, state, item)
         hidden, shift, elapsed = self._hidden(ids)
-        logits = self._pointer(hidden, decide + shift, [index + shift for index in opt_idx])
+        logits = self._head.logits(hidden, decide + shift, [index + shift for index in opt_idx])
         return logits.tolist(), len(ids), elapsed
 
     def _hidden(self, ids):
@@ -230,8 +226,3 @@ class KevEngine:
         if self._captured["ntok"] < len(ids):
             raise RuntimeError("hidden tokens %s < %s" % (self._captured["ntok"], len(ids)))
         return hidden, self._captured["ntok"] - len(ids), elapsed
-
-    def _pointer(self, hidden, decide, opts):
-        query = hidden[decide] @ self._wq.T + self._bq
-        key = hidden[opts] @ self._wk.T + self._bk
-        return key @ query * self._scale

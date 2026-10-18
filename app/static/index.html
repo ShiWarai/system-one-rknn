@@ -10,7 +10,15 @@
       font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       margin: 0; padding: 16px; background: #111; color: #d4d4d4;
     }
-    h1 { font-size: 18px; margin: 0 0 12px; }
+    h1 {
+      font-size: 18px; margin: 0 0 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    #lang-switch { display: inline-flex; font-size: 11px; font-weight: 400; }
+    #lang-switch button { padding: 2px 8px; }
+    #lang-switch button:first-child { border-start-end-radius: 0; border-end-end-radius: 0; }
+    #lang-switch button:last-child { border-start-start-radius: 0; border-end-start-radius: 0; margin-inline-start: -1px; }
+    #lang-switch button[aria-pressed="true"] { background: #333; color: #fff; }
     h2 { font-size: 14px; margin: 16px 0 6px; }
     label { display: block; margin: 10px 0 4px; color: #9a9a9a; }
     select, textarea, button {
@@ -18,7 +26,6 @@
       border: 1px solid #333; border-radius: 4px;
     }
     select, textarea { width: 100%; box-sizing: border-box; padding: 8px; }
-    #lang { width: auto; min-width: 120px; }
     button { padding: 8px 16px; cursor: pointer; }
     #time { margin-left: 10px; color: #9a9a9a; }
     .err { color: #e07070; min-height: 1.2em; }
@@ -32,12 +39,10 @@
   </style>
 </head>
 <body>
-  <h1>system one</h1>
-  <label for="lang" data-i18n="language">language</label>
-  <select id="lang">
-    <option value="en">English</option>
-    <option value="ru">Русский</option>
-  </select>
+  <h1>system one<span id="lang-switch">
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+  </span></h1>
   <label for="model" data-i18n="model">model</label>
   <select id="model"></select>
   <label for="state" data-i18n="state">state</label>
@@ -74,7 +79,6 @@
   <script>
     const STRINGS = {
       "en": {
-        "language": "language",
         "model": "model",
         "state": "state",
         "questions": "questions",
@@ -89,7 +93,6 @@
         "defaultQuestions": "{\n  \"intent\": {\n    \"type\": \"choice\",\n    \"instructions\": \"Classify the root cause domain.\",\n    \"criteria\": {\n      \"infrastructure\": \"Database, hardware, network, or server failures\",\n      \"billing\": \"Invoices, payments, refunds\"\n    }\n  },\n  \"is_urgent\": {\n    \"type\": \"noul\",\n    \"instructions\": \"Does this issue require immediate attention?\"\n  },\n  \"severity\": {\n    \"type\": \"score\",\n    \"instructions\": \"Rate the incident severity.\",\n    \"criteria\": [\"Low\", \"Medium\", \"High\"]\n  }\n}"
       },
       "ru": {
-        "language": "язык",
         "model": "модель",
         "state": "состояние",
         "questions": "вопросы",
@@ -106,7 +109,7 @@
     };
 
     const modelEl = document.getElementById("model");
-    const langEl = document.getElementById("lang");
+    const langBtns = document.querySelectorAll("#lang-switch button");
     const stateEl = document.getElementById("state");
     const questionsEl = document.getElementById("questions");
     const errEl = document.getElementById("error");
@@ -146,19 +149,23 @@
       const prev = lang;
       lang = next;
       document.documentElement.lang = next;
-      langEl.value = next;
       for (const el of document.querySelectorAll("[data-i18n]")) {
         el.textContent = t(el.dataset.i18n);
+      }
+      for (const btn of langBtns) {
+        btn.setAttribute("aria-pressed", String(btn.dataset.lang === next));
       }
       if (stateEl.value === STRINGS[prev].defaultState) stateEl.value = t("defaultState");
       if (questionsEl.value === STRINGS[prev].defaultQuestions) questionsEl.value = t("defaultQuestions");
       if (lastData) render(lastData);
     }
 
-    langEl.onchange = () => {
-      applyLang(langEl.value);
-      try { localStorage.setItem("systemone-lang", langEl.value); } catch (err) {}
-    };
+    for (const btn of langBtns) {
+      btn.onclick = () => {
+        applyLang(btn.dataset.lang);
+        try { localStorage.setItem("systemone-lang", btn.dataset.lang); } catch (err) {}
+      };
+    }
 
     function cell(text) {
       const td = document.createElement("td");

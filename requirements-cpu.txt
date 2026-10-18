@@ -1,0 +1,4 @@
+-r requirements.txt
+laya==0.4.11
+peft==0.21.2
+transformers==5.20.1

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       publish_prerelease:
-        description: "Build and publish prerelease image to GHCR (tag :rk3588-prerelease)"
+        description: "Build and publish prerelease image to GHCR (tag :rknn-prerelease)"
         required: false
         default: false
         type: boolean
@@ -77,10 +77,20 @@ jobs:
         include:
           - runner: ubuntu-latest
             platform: linux/amd64
-            board: rk3588
+            board: rknn
+            docker_target: runtime
           - runner: ubuntu-24.04-arm
             platform: linux/arm64
-            board: rk3588
+            board: rknn
+            docker_target: runtime
+          - runner: ubuntu-latest
+            platform: linux/amd64
+            board: cpu
+            docker_target: runtime-cpu
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            board: cpu
+            docker_target: runtime-cpu
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -107,7 +117,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          target: runtime
+          target: ${{ matrix.docker_target }}
           platforms: ${{ matrix.platform }}
           build-args: |
             BOARD=${{ matrix.board }}
@@ -140,7 +150,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [rk3588]
+        board: [rknn, cpu]
     steps:
       - name: Prepare
         run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/system-one-rknn" >> "$GITHUB_ENV"
@@ -223,8 +233,8 @@ jobs:
             *Тесты и prerelease успешны*
             Репозиторий: `${{ github.repository }}`
             Ветка: `${{ github.ref_name }}`
-            Тег: `:rk3588-prerelease` и `:rk3588-${{ github.sha }}`
-            Образ: `ghcr.io/${{ github.repository_owner }}/system-one-rknn:rk3588-prerelease`
+            Тег: `:rknn-prerelease` и `:rknn-${{ github.sha }}`
+            Образ: `ghcr.io/${{ github.repository_owner }}/system-one-rknn:rknn-prerelease`
             [Открыть run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Tests OK (no prerelease)

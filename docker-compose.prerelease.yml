@@ -1,8 +1,8 @@
-# Кандидат: образ :<плата>-prerelease из GHCR. Сборка локально не выполняется.
-# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-prerelease
+# Кандидат: образ :<семейство>-prerelease из GHCR. Сборка локально не выполняется.
+# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rknn-prerelease
 # docker compose -f docker-compose.yml -f docker-compose.prerelease.yml up -d
 
 services:
   system-one-rknn:
-    image: ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:${BOARD:-rk3588}-prerelease
+    image: ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:${BOARD:-rknn}-prerelease
     build: !reset null

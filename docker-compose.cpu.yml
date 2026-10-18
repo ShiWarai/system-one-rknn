@@ -1,0 +1,14 @@
+# CPU-оверлей: без NPU-устройств, target runtime-cpu, HF-кэш весов в /models/hf.
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
+name: system-one-rknn
+
+services:
+  system-one-rknn:
+    build:
+      target: runtime-cpu
+    image: system-one-rknn:cpu
+    container_name: system-one-rknn-cpu
+    devices: []
+    environment:
+      SYSTEM_ONE_ENGINE: cpu
+      HF_HOME: /models/hf

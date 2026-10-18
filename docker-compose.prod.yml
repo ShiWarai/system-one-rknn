@@ -1,8 +1,8 @@
-# Продакшен: образ :<плата>-main из GHCR. Сборка локально не выполняется.
-# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-main
+# Продакшен: образ :<семейство>-main из GHCR. Сборка локально не выполняется.
+# docker pull ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rknn-main
 # docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 services:
   system-one-rknn:
-    image: ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:${BOARD:-rk3588}-main
+    image: ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:${BOARD:-rknn}-main
     build: !reset null

@@ -12,33 +12,33 @@ class NpuLibsTest(unittest.TestCase):
         with self.assertRaises(UnsupportedBoard):
             runtime_libraries("   ")
 
-    def test_unknown_board_is_rejected(self):
+    def test_old_chip_token_is_unknown(self):
         with self.assertRaises(UnsupportedBoard) as caught:
-            runtime_libraries("rk3568")
-        self.assertIn("rk3568", str(caught.exception))
+            runtime_libraries("rk3588")
+        self.assertIn("rk3588", str(caught.exception))
         with tempfile.TemporaryDirectory() as dest:
             with self.assertRaises(SystemExit) as exited:
-                main(["npu_libs.py", "rk3568", "arm64", dest])
-            self.assertIn("rk3568", str(exited.exception))
+                main(["npu_libs.py", "rk3588", "arm64", dest])
+            self.assertIn("rk3588", str(exited.exception))
             self.assertEqual(os.listdir(dest), [])
 
     def test_usage_requires_board_arch_and_dest(self):
         with self.assertRaises(SystemExit):
             main(["npu_libs.py"])
 
-    def test_rk3588_names_are_the_image_paths(self):
-        names = [name for name, _url, _digest in runtime_libraries("rk3588")]
+    def test_rknn_names_are_the_image_paths(self):
+        names = [name for name, _url, _digest in runtime_libraries("rknn")]
         self.assertEqual(names, ["librknnrt-2.3.2.so", "librkllmrt-1.3.1.so"])
 
     def test_non_arm64_installs_nothing(self):
         with tempfile.TemporaryDirectory() as dest:
-            self.assertEqual(install_runtime_libraries("rk3588", "amd64", dest), [])
-            self.assertEqual(install_runtime_libraries("rk3588", "", dest), [])
+            self.assertEqual(install_runtime_libraries("rknn", "amd64", dest), [])
+            self.assertEqual(install_runtime_libraries("rknn", "", dest), [])
             self.assertEqual(os.listdir(dest), [])
 
-    def test_rk3588_arm64_fetches_pinned_runtimes(self):
+    def test_rknn_arm64_fetches_pinned_runtimes(self):
         with tempfile.TemporaryDirectory() as dest:
-            paths = install_runtime_libraries("rk3588", "arm64", dest)
+            paths = install_runtime_libraries("rknn", "arm64", dest)
             by_name = {}
             for path in paths:
                 with open(path, "rb") as handle:
@@ -49,4 +49,4 @@ class NpuLibsTest(unittest.TestCase):
                 self.assertEqual(blob[18:20], b"\xb7\x00")
             self.assertIn(b"librknnrt version: 2.3.2", by_name["librknnrt-2.3.2.so"])
             self.assertIn(b"RKLLM SDK (version: 1.3.1", by_name["librkllmrt-1.3.1.so"])
-            self.assertEqual(install_runtime_libraries("rk3588", "arm64", dest), paths)
+            self.assertEqual(install_runtime_libraries("rknn", "arm64", dest), paths)
