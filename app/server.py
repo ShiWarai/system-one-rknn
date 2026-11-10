@@ -8,6 +8,7 @@ from pathlib import Path
 from app.api import ApiError, LimitError, assemble, parse_request, response, softmax
 
 PAGE = Path(__file__).resolve().parent / "static" / "index.html"
+FAVICON = PAGE.parent / "favicon.svg"
 
 _MODEL_KEYS = {
     "laya": "laya",
@@ -130,6 +131,9 @@ def make_handler(runtime):
                 return
             if path == "/":
                 self._send(200, PAGE.read_text(encoding="utf-8"), "text/html; charset=utf-8")
+                return
+            if path == "/favicon.svg":
+                self._send(200, FAVICON.read_text(encoding="utf-8"), "image/svg+xml")
                 return
             self._send(404, "not found", "text/plain; charset=utf-8")
 

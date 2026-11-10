@@ -7,7 +7,8 @@ import time
 import numpy as np
 from tokenizers import Tokenizer
 
-from app.kev_encode import encode_question
+from app.api import LimitError
+from app.kev_encode import encode_question, serving_limit
 from app.kev_pointer import PointerHead
 
 RKLLM_INPUT_TOKEN = 1
@@ -138,6 +139,11 @@ class KevEngine:
     release_date = "2026-09-30"
 
     def __init__(self, root, lib_path):
+        try:
+            self._max_context = serving_limit()
+        except LimitError as exc:
+            raise SystemExit(str(exc))
+        print("kev serving max_context=%d" % self._max_context, flush=True)
         with open(os.path.join(root, "pointer.json"), encoding="utf-8") as handle:
             self._temperature_value = float(json.load(handle)["temperature"])
         self._head = PointerHead(root)
@@ -164,7 +170,7 @@ class KevEngine:
         self._lib.rkllm_createDefaultParam.restype = _Param
         param = self._lib.rkllm_createDefaultParam()
         param.model_path = os.path.join(root, "kev-0.8b-w8a8-opt0-ctx16384.rkllm").encode()
-        param.max_context_len = 16384
+        param.max_context_len = self._max_context
         param.max_new_tokens = 0
         param.n_keep = 0
         param.is_async = False
@@ -199,7 +205,7 @@ class KevEngine:
         return self._temperature_value
 
     def forward(self, state, item):
-        ids, decide, opt_idx = encode_question(self._tok, state, item)
+        ids, decide, opt_idx = encode_question(self._tok, state, item, self._max_context)
         hidden, shift, elapsed = self._hidden(ids)
         logits = self._head.logits(hidden, decide + shift, [index + shift for index in opt_idx])
         return logits.tolist(), len(ids), elapsed

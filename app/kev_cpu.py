@@ -11,7 +11,8 @@ import time
 import torch
 from tokenizers import Tokenizer
 
-from app.kev_encode import encode_question
+from app.api import LimitError
+from app.kev_encode import encode_question, serving_limit
 from app.kev_pointer import PointerHead
 
 BASE = "Qwen/Qwen3.5-0.8B-Base"
@@ -30,6 +31,11 @@ class KevCpuEngine:
         self._tok = tok
         self._head = head
         self._temperature_value = temperature
+        try:
+            self._max_context = serving_limit()
+        except LimitError as exc:
+            raise SystemExit(str(exc))
+        print("kev serving max_context=%d" % self._max_context, flush=True)
 
     @classmethod
     def load(cls, root):
@@ -55,7 +61,7 @@ class KevCpuEngine:
         return self._temperature_value
 
     def forward(self, state, item):
-        ids, decide, opt_idx = encode_question(self._tok, state, item)
+        ids, decide, opt_idx = encode_question(self._tok, state, item, self._max_context)
         started = time.perf_counter()
         with torch.no_grad():
             out = self._lm(input_ids=torch.tensor([ids]), output_hidden_states=True)

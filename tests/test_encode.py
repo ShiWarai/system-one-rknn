@@ -1,8 +1,16 @@
+import os
 import unittest
 from types import SimpleNamespace
+from unittest import mock
 
 from app.api import LimitError
-from app.kev_encode import encode_question
+from app.kev_encode import (
+    ENV_MAX_CONTEXT,
+    MAX_CONTEXT,
+    encode_question,
+    resolve_max_context,
+    serving_limit,
+)
 from app.laya_encode import build_sequence
 
 
@@ -71,6 +79,50 @@ class EncodeTest(unittest.TestCase):
         self.assertLessEqual(len(ids), 16384)
         self.assertEqual(decide, len(ids) - 1)
         self.assertEqual(len(opts), 2)
+
+    def test_kev_honours_a_serving_limit_below_the_file(self):
+        # KevTok makes one id per char; the row is ~12 + len(state) tokens.
+        with self.assertRaises(LimitError) as ctx:
+            encode_question(KevTok(), "x" * 12, choice(), max_context=8)
+        message = str(ctx.exception)
+        self.assertIn("serving limit is 8", message)
+        self.assertIn(ENV_MAX_CONTEXT, message)
+        self.assertIn("file holds %d" % MAX_CONTEXT, message)
+
+    def test_kev_serving_limit_at_the_file_capacity_keeps_the_file_message(self):
+        with self.assertRaises(LimitError) as ctx:
+            encode_question(KevTok(), "x" * 17000, choice(), max_context=MAX_CONTEXT)
+        self.assertIn("this file holds %d" % MAX_CONTEXT, str(ctx.exception))
+
+
+class ServingLimitEnvTest(unittest.TestCase):
+    def test_unset_default_to_file_capacity(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertIsNone(resolve_max_context())
+            self.assertEqual(serving_limit(), MAX_CONTEXT)
+
+    def test_blank_default_to_file_capacity(self):
+        with mock.patch.dict(os.environ, {ENV_MAX_CONTEXT: "  "}):
+            self.assertEqual(serving_limit(), MAX_CONTEXT)
+
+    def test_reads_the_environment(self):
+        with mock.patch.dict(os.environ, {ENV_MAX_CONTEXT: "512"}):
+            self.assertEqual(serving_limit(), 512)
+
+    def test_rejects_above_the_file_capacity(self):
+        with mock.patch.dict(os.environ, {ENV_MAX_CONTEXT: str(MAX_CONTEXT + 1)}):
+            with self.assertRaises(LimitError):
+                serving_limit()
+
+    def test_rejects_non_positive(self):
+        with mock.patch.dict(os.environ, {ENV_MAX_CONTEXT: "0"}):
+            with self.assertRaises(LimitError):
+                serving_limit()
+
+    def test_rejects_non_integer(self):
+        with mock.patch.dict(os.environ, {ENV_MAX_CONTEXT: "16k"}):
+            with self.assertRaises(LimitError):
+                serving_limit()
 
 
 if __name__ == "__main__":
