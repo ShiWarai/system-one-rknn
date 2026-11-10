@@ -134,7 +134,7 @@ class _Callback(ctypes.Structure):
 
 class KevEngine:
     name = "kev-0.8b"
-    description = "Kev-0.8B merged into Qwen3.5-0.8B-Base, RKLLM w8a8, context 320"
+    description = "Kev-0.8B merged into Qwen3.5-0.8B-Base, RKLLM w8a8, context 16384"
     release_date = "2026-09-30"
 
     def __init__(self, root, lib_path):
@@ -163,8 +163,8 @@ class KevEngine:
         self._on_result = on_result
         self._lib.rkllm_createDefaultParam.restype = _Param
         param = self._lib.rkllm_createDefaultParam()
-        param.model_path = os.path.join(root, "kev-0.8b-w8a8-opt0-ctx320.rkllm").encode()
-        param.max_context_len = 320
+        param.model_path = os.path.join(root, "kev-0.8b-w8a8-opt0-ctx16384.rkllm").encode()
+        param.max_context_len = 16384
         param.max_new_tokens = 0
         param.n_keep = 0
         param.is_async = False

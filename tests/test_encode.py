@@ -62,13 +62,13 @@ class EncodeTest(unittest.TestCase):
         self.assertLessEqual(len(ids), 512)
         self.assertEqual(len(markers), 2)
 
-    def test_kev_rejects_a_row_over_320(self):
+    def test_kev_rejects_a_row_over_16384(self):
         with self.assertRaises(LimitError):
-            encode_question(KevTok(), "x" * 400, choice())
+            encode_question(KevTok(), "x" * 17000, choice())
 
     def test_kev_short_row_keeps_one_decide_token(self):
         ids, decide, opts = encode_question(KevTok(), "paw", choice())
-        self.assertLessEqual(len(ids), 320)
+        self.assertLessEqual(len(ids), 16384)
         self.assertEqual(decide, len(ids) - 1)
         self.assertEqual(len(opts), 2)
 

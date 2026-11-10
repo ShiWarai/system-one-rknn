@@ -23,7 +23,7 @@ class ModelSelectionTest(unittest.TestCase):
     def test_download_list_follows_the_selection(self):
         kev_only = model_files("laya-repo", "kev-repo", ["kev"])
         self.assertTrue(all(folder == "kev" for _repo, folder, _name in kev_only))
-        self.assertIn("kev-0.8b-w8a8-opt0-ctx320.rkllm", [name for _r, _f, name in kev_only])
+        self.assertIn("kev-0.8b-w8a8-opt0-ctx16384.rkllm", [name for _r, _f, name in kev_only])
         self.assertNotIn("laya", [folder for _r, folder, _n in kev_only])
 
         laya_only = model_files("laya-repo", "kev-repo", ["laya"])

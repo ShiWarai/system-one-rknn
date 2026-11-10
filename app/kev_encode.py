@@ -1,14 +1,14 @@
 """One Kev question as a single causal row.
 
 Questions are encoded separately. A packed row would let later questions leak
-into the Gated DeltaNet state, and the published file holds 320 tokens.
+into the Gated DeltaNet state, and the published file holds 16384 tokens.
 """
 import json
 import re
 
 from app.api import LimitError
 
-MAX_CONTEXT = 320
+MAX_CONTEXT = 16384
 SPECIAL = (
     "<|fim_prefix|>",
     "<|fim_middle|>",

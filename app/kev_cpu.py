@@ -22,7 +22,7 @@ LORA_REV = "9a45d25eb2ab761841196625383fa1dff0e56c1e"
 
 class KevCpuEngine:
     name = "kev-0.8b"
-    description = "Kev-0.8B merged into Qwen3.5-0.8B-Base, torch CPU FP32, context 320"
+    description = "Kev-0.8B merged into Qwen3.5-0.8B-Base, torch CPU FP32, context 16384"
     release_date = "2026-09-30"
 
     def __init__(self, lm, tok, head, temperature):

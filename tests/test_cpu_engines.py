@@ -186,7 +186,7 @@ class DownloadCatalogTest(unittest.TestCase):
         names = {name for _r, _f, name in cpu}
         folders = {folder for _r, folder, _n in cpu}
         self.assertNotIn("laya", folders)
-        self.assertNotIn("kev-0.8b-w8a8-opt0-ctx320.rkllm", names)
+        self.assertNotIn("kev-0.8b-w8a8-opt0-ctx16384.rkllm", names)
         self.assertIn("q_weight.npy", names)
         self.assertIn("tokenizer.json", names)
 
@@ -196,7 +196,7 @@ class DownloadCatalogTest(unittest.TestCase):
         npu = model_files("laya-repo", "kev-repo", ["laya", "kev"])
         names = {name for _r, _f, name in npu}
         self.assertIn("laya-multilingual-fp16-seq512.rknn", names)
-        self.assertIn("kev-0.8b-w8a8-opt0-ctx320.rkllm", names)
+        self.assertIn("kev-0.8b-w8a8-opt0-ctx16384.rkllm", names)
 
 
 if __name__ == "__main__":

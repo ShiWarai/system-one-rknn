@@ -8,7 +8,7 @@ LAYA_FILES = (
     "temperature.json",
 )
 KEV_FILES = (
-    "kev-0.8b-w8a8-opt0-ctx320.rkllm",
+    "kev-0.8b-w8a8-opt0-ctx16384.rkllm",
     "tokenizer.json",
     "q_weight.npy",
     "k_weight.npy",
