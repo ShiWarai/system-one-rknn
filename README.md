@@ -68,17 +68,17 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 Локальная сборка — `docker-compose.yml`, target `runtime`.
 
-Кандидат на проверку (`:rk3588-prerelease`):
+Кандидат на проверку (`:rknn-prerelease`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-prerelease"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rknn-prerelease"
 docker compose -f docker-compose.yml -f docker-compose.prerelease.yml up -d
 ```
 
-Продакшен (`:rk3588-main`):
+Продакшен (`:rknn-main`):
 
 ```bash
-docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rk3588-main"
+docker pull "ghcr.io/${GHCR_OWNER:-shiwarai}/system-one-rknn:rknn-main"
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
@@ -101,9 +101,11 @@ docker compose -f docker-compose.dev.yml run --rm -T dev ./scripts/ci-test.sh
 
 | Тег | Когда |
 | --- | --- |
-| `:rk3588-main` | Успешный Deploy на `main` |
-| `:rk3588-prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
-| `:rk3588-<sha>` | Тот же билд, что `:rk3588-main` или `:rk3588-prerelease` |
+| `:rknn-main` | Успешный Deploy на `main` |
+| `:rknn-prerelease` | Push в `dev` с `[prerelease]` в сообщении коммита или ручной флаг |
+| `:rknn-<sha>` | Тот же билд, что `:rknn-main` или `:rknn-prerelease` |
+
+Те же теги публикуются для `cpu`-доски (`:cpu-main`, `:cpu-prerelease`, `:cpu-<sha>`). В compose-оверлеях доска выбирается переменной `BOARD` (по умолчанию `rknn`).
 
 Образы `linux/amd64` и `linux/arm64` собираются на нативных раннерах GitHub и публикуются одним манифестом.
 
