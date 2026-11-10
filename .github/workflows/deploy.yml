@@ -215,7 +215,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            *Тесты прошли, prerelease не удался*
+            *Тесты прошли, публикация prerelease не удалась*
             Репозиторий: `${{ github.repository }}`
             Ветка: `${{ github.ref_name }}`
             [Открыть run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
@@ -230,7 +230,7 @@ jobs:
           format: markdown
           disable_notification: true
           message: |
-            *Тесты и prerelease успешны*
+            *Тесты и публикация prerelease успешны*
             Репозиторий: `${{ github.repository }}`
             Ветка: `${{ github.ref_name }}`
             Тег: `:rknn-prerelease` и `:rknn-${{ github.sha }}`
