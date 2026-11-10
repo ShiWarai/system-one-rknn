@@ -104,7 +104,7 @@
         "confidence": "уверенность",
         "questionsError": "вопросы: ",
         "defaultState": "Отставание репликации базы данных превысило 45 секунд.",
-        "defaultQuestions": "{\n  \"намерение\": {\n    \"type\": \"choice\",\n    \"instructions\": \"Определи область первопричины.\",\n    \"criteria\": {\n      \"инфраструктура\": \"Сбои базы данных, оборудования, сети или серверов\",\n      \"биллинг\": \"Счета, платежи, возвраты\"\n    }\n  },\n  \"срочность\": {\n    \"type\": \"noul\",\n    \"instructions\": \"Требует ли проблема немедленного вмешательства?\"\n  },\n  \"серьёзность\": {\n    \"type\": \"score\",\n    \"instructions\": \"Оцени серьёзность инцидента.\",\n    \"criteria\": [\"Низкая\", \"Средняя\", \"Высокая\"]\n  }\n}"
+        "defaultQuestions": "{\n  \"intent\": {\n    \"type\": \"choice\",\n    \"instructions\": \"Classify the root cause domain.\",\n    \"criteria\": {\n      \"infrastructure\": \"Database, hardware, network, or server failures\",\n      \"billing\": \"Invoices, payments, refunds\"\n    }\n  },\n  \"is_urgent\": {\n    \"type\": \"noul\",\n    \"instructions\": \"Does this issue require immediate attention?\"\n  },\n  \"severity\": {\n    \"type\": \"score\",\n    \"instructions\": \"Rate the incident severity.\",\n    \"criteria\": [\"Low\", \"Medium\", \"High\"]\n  }\n}"
       }
     };
 
